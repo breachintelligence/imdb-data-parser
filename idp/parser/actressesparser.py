@@ -70,13 +70,34 @@ class ActressesParser(BaseParser):
             if(len(matcher.group(1).strip()) > 0):
                 namelist = matcher.group(1).split(', ')
                 if(len(namelist) == 2):
+                    self.name = namelist[1].strip()
+                    self.surname = namelist[0].strip()
+                else:
+                    self.name = namelist[0].strip()
+                    self.surname = ""
+                    
+            self.tsv_file.write(self.name + self.seperator + self.surname + self.seperator + self.concat_regex_groups([2,9,10,11], None, matcher) + "\n")
+        elif(len(matcher.get_last_string()) == 1):
+            pass
+        else:
+            logging.critical("This line is fucked up: " + matcher.get_last_string())
+            self.fucked_up_count += 1
+
+
+    def parse_into_tags(self, matcher):
+        is_match = matcher.match(self.base_matcher_pattern)
+
+        if(is_match):
+            if(len(matcher.group(1).strip()) > 0):
+                namelist = matcher.group(1).split(', ')
+                if(len(namelist) == 2):
                     self.name = namelist[1]
                     self.surname = namelist[0]
                 else:
                     self.name = namelist[0]
                     self.surname = ""
                     
-            self.tsv_file.write(self.name + self.seperator + self.surname + self.seperator + self.concat_regex_groups([2,9,10,11], None, matcher) + "\n")
+            self.tag_file.write('"' + self.name + " " + self.surname + '"' + self.seperator  + '"'+ self.concat_regex_groups([2,9,10,11], None, matcher) + '"\n')
         elif(len(matcher.get_last_string()) == 1):
             pass
         else:

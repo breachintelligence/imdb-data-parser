@@ -57,6 +57,9 @@ class BaseParser(metaclass=ABCMeta):
           self.sql_file.write(self.scripthelper.scripts['drop'])
           self.sql_file.write(self.scripthelper.scripts['create'])
           self.sql_file.write(self.scripthelper.scripts['insert'])
+        elif (self.mode == "TAG"):
+          self.tag_file =  self.filehandler.get_tsv_file()
+          self.seperator = ', '
 
     @abstractmethod
     def parse_into_tsv(self, matcher):
@@ -64,6 +67,10 @@ class BaseParser(metaclass=ABCMeta):
 
     @abstractmethod
     def parse_into_db(self, matcher):
+        raise NotImplemented
+
+    @abstractmethod
+    def parse_into_tags(self, matcher):
         raise NotImplemented
 
     @duration_logged
@@ -92,6 +99,9 @@ class BaseParser(metaclass=ABCMeta):
                     self.parse_into_tsv(matcher)
                 elif(self.mode == "SQL"):
                     self.parse_into_db(matcher)
+                elif(self.mode == "POL"):
+                    matcher = RegExHelper(line.replace('"', ''))
+                    self.parse_into_tags(matcher)
                 else:
                     raise NotImplemented("Mode: " + self.mode)
 
@@ -114,8 +124,12 @@ class BaseParser(metaclass=ABCMeta):
 
     def concat_regex_groups(self, group_list, col_list, matcher):
         ret_val = ""
+        valid_groups = []
         if col_list == None:
-            ret_val = self.seperator.join('%s' % (matcher.group(i)) for i in group_list)
+            for i in range(len(group_list)):
+                if matcher.group(group_list[i]):                    
+                    valid_groups.append(group_list[i])
+            ret_val = self.seperator.join('%s' % (matcher.group(i).strip()) for i in valid_groups)
         else:
             for i in range(len(group_list)):
                 if DbScriptHelper.keywords['string'] in self.db_table_info['columns'][col_list[i]]['colinfo']:

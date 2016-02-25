@@ -69,6 +69,15 @@ class MoviesParser(BaseParser):
             logging.critical("This line is fucked up: " + matcher.get_last_string())
             self.fucked_up_count += 1
 
+    def parse_into_tags(self, matcher):
+        is_match = matcher.match(self.base_matcher_pattern)
+
+        if(is_match):
+            self.tag_file.write('"' + self.concat_regex_groups([1,2,3,5,6,7,8], None, matcher) + "\"\n")
+        else:
+            logging.critical("This line is fucked up: " + matcher.get_last_string())
+            self.fucked_up_count += 1
+
     def parse_into_db(self, matcher):
         is_match = matcher.match(self.base_matcher_pattern)
 
